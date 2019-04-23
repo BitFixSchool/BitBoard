@@ -1,0 +1,274 @@
+import tkFont
+from Tkinter import *
+import Tkinter as tk
+import os
+from PIL import ImageTk, Image, ImageFont
+import random
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(17, GPIO.OUT)
+GPIO.setup(27, GPIO.OUT)
+GPIO.setup(22, GPIO.OUT)
+GPIO.setup(18, GPIO.OUT)
+GPIO.setup(23, GPIO.OUT)
+GPIO.setup(24, GPIO.OUT)
+
+Eblink = GPIO.PWM(17, 100)
+Elook= GPIO.PWM(27, 100)
+Lf1 = GPIO.PWM(22, 100)
+Lf2 = GPIO.PWM(18, 100)
+HM = GPIO.PWM(23, 100)
+BM = GPIO.PWM(24, 100)
+
+Ans1 = tk.Button
+Ans2 = tk.Button
+class Application(tk.Tk):
+
+    def __init__(self, *args,**kwargs):
+        tk.Tk.__init__(self,*args,**kwargs)
+        container = tk.Frame(self)
+        container.pack()
+        container.grid_rowconfigure(0,weight=1)
+        container.grid_columnconfigure(0,weight=1)
+        
+        self.frames = {}
+        self.overrideredirect(1)
+
+        for F in(MainMenus,Games,Act):
+            frame = F(container,self)
+            self.frames[F] = frame
+            frame.grid(row=0,column=0,sticky="nsew")
+        self.show(MainMenus)
+    def show(self,cont):
+        frame = self.frames[cont]
+        frame.tkraise()
+
+class MainMenus(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+        self.config(width=800,height=500)
+
+        g = tk.Button(self)
+        g["text"] = "Play TSA game"
+        g.place(bordermode=OUTSIDE, height= 100, width = 400, x = 0, y = 100)
+        #g.config(font=self.fonts)
+        g["command"] = lambda: controller.show(Games)
+
+
+        act = tk.Button(self)
+        act["text"] = "Interact with Bear"
+        act.place(bordermode=OUTSIDE, height= 100, width = 400, x = 0, y = 200)
+        #act.config(font=self.fonts)
+        act["command"] = lambda: controller.show(Act)
+
+
+        opp = tk.Button(self)
+        opp["text"] = "Settings"
+        opp.place(bordermode=OUTSIDE, height= 100, width = 400, x = 0, y = 300)
+        #opp.config(font=self.fonts)
+        #opp["command"] = self.settings
+        
+        setcam = Canvas(self,width=75,height=75)  
+        mage = ImageTk.PhotoImage(master=setcam,file='/home/pi/Documents/Images/SizedSettings.gif')
+        tk.Frame.mage = mage
+        setcam.create_image(0,0,anchor=NW,image = mage) 
+        setcam.place(bordermode=OUTSIDE,x = 25, y = 312.5)
+
+
+        quitButton = tk.Button(self, text='Quit',command=controller.destroy,fg = "red")
+        #quitButton.config(font=self.fonts)
+        quitButton.place(bordermode=OUTSIDE, height= 100, width = 400, x = 0, y = 400)
+
+
+
+        setbear = Canvas(self,width=300,height=300)  
+        mage3 = ImageTk.PhotoImage(master=setbear,file='/home/pi/Documents/Images/SizedCam.gif')
+        tk.Frame.mage3 = mage3
+        setbear.create_image(0,0,anchor=NW,image = mage3) 
+        setbear.place(bordermode=OUTSIDE,x = 400, y=200)
+        
+class Games(tk.Frame):
+    
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+        self.config(width=800,height=500)
+        
+        Return = tk.Button(self, text='Return',command=lambda: controller.show(MainMenus),fg = "red")
+        #Return.config(font=self.fonts)
+        Return.place(bordermode=OUTSIDE, height= 100, width = 800, x = 0, y = 400)
+
+        GetInt = tk.Button(self, text='Ask Question',command=self.pullRan,fg = "red")
+        #GetInt.config(font=self.fonts)
+        GetInt.place(bordermode=OUTSIDE, height= 100, width = 800, x = 0, y = 300)
+        Ans1 = tk.Button(self)
+        Ans2 = tk.Button(self)
+        Ans1.place(bordermode=OUTSIDE, height= 200, width = 400, x = 0, y = 100)
+        Ans2.place(bordermode=OUTSIDE, height= 200, width = 400, x = 400, y = 100)
+        #Ans1.config(font=self.fonts,text='set1',command=self.ask,fg = "red")
+        #Ans2.config(font=self.fonts,text='set2',command=self.ask,fg = "red")
+
+    def pullRan (self):
+        answer = False
+        ran = random.randint(1,10)
+        ranPlace = random.randint(0,1)
+        print (ranPlace)
+         
+        Ans1 = tk.Button(self)
+        Ans2 = tk.Button(self)
+        #trueAns.config(font=self.fonts,text='True',command=self.AnsTru,fg = "red")
+        #falseAns.config(font=self.fonts,text='False',command=self.AnsFal,fg = "red")
+        question = Label(self,text="")
+        Ans1.config(text="True",command=lambda: self.AnsTru(answer))
+        Ans2.config(text="False",command=lambda: self.AnsFal(answer))
+        
+        if(ranPlace==1):
+            Ans1.place(bordermode=OUTSIDE, height= 200, width = 400, x = 0, y = 100)
+            Ans2.place(bordermode=OUTSIDE, height= 200, width = 400, x = 400, y = 100)
+
+        else:
+            Ans1.place(bordermode=OUTSIDE, height= 200, width = 400, x = 400, y = 100)
+            Ans2.place(bordermode=OUTSIDE, height= 200, width = 400, x = 0, y = 100)
+            
+        if(ran==1):
+            question = Label(self,text="Thompson 1")
+            print(1)
+            answer = True
+        elif(ran==2):
+            question = Label(self,text="Thompson is the greastest American")
+            answer = True
+        elif(ran==3):
+            question = Label(self,text="3")
+            answer = True
+            print(1)
+        elif(ran==4):
+            question = Label(self,text="Thompson 4")
+            answer = True
+            print(1)
+        elif(ran==5):
+            question = Label(self,text="Thompson 5")
+            answer = True
+            print(1)
+        elif(ran==6):
+            question = Label(self,text="Thompson 6")
+            answer = False
+            print(1)
+        elif(ran==7):
+            question = Label(self,text="Thompson 7")
+            answer = False
+            print(1)
+        elif(ran==8):
+            question = Label(self,text="Thompson 8")
+            answer = False
+            print(1)
+        elif(ran==9):
+            question = Label(self,text="Thompson 9")
+            answer = False           
+            print(1)
+        elif(ran==10):
+            question = Label(self,text="Thompson 11")
+            answer = False
+            print(1)
+        else:
+            print("Error")
+        question.place(bordermode=OUTSIDE, height= 100, width = 400, x = 200, y = 0)
+
+    def correctA(self):
+        question = Label(self,text="Correct")
+        question.place(bordermode=OUTSIDE, height= 100, width = 400, x = 200, y = 0)
+        
+        Rcan = Canvas(self,width=800,height=400)  
+        mage1 = ImageTk.PhotoImage(master=Rcan,file='/home/pi/Documents/Images/SizedHappy.gif')
+        tk.Frame.mage1 = mage1
+        Rcan.create_image(0,0,anchor=NW,image = mage1) 
+        Rcan.place(bordermode=OUTSIDE,x = 0, y =0)
+
+        ReturnA = tk.Button(self, text='Next',command=lambda: self.hide(ReturnA,Rcan) ,fg = "red")
+        #ReturnA.config(font=self.fonts)
+        ReturnA.place(bordermode=OUTSIDE, height= 100, width = 800, x = 0, y = 400)
+        #do movement and lights
+        
+    def wrongA(self):
+        question = Label(self,text="Wrong")
+        question.place(bordermode=OUTSIDE, height= 100, width = 400, x = 200, y = 0)
+
+        Wcan = Canvas(self,width=800,height=400)  
+        mage2 = ImageTk.PhotoImage(master=Wcan,file='/home/pi/Documents/Images/SizedSad.gif')
+        tk.Frame.mage1 = mage2
+        Wcan.create_image(0,0,anchor=NW,image = mage2) 
+        Wcan.place(bordermode=OUTSIDE,x = 0, y=0)
+
+        ReturnB = tk.Button(self, text='Next',command=lambda: self.hide(ReturnB,Wcan) ,fg = "red")
+        #ReturnB.config(font=self.fonts)
+        ReturnB.place(bordermode=OUTSIDE, height= 100, width = 800, x = 0, y = 400)
+        # do angry movement and lights
+
+    def hide(self,nextB,pic):
+        nextB.destroy()
+        pic.config(width=0,height=0)
+        self.pullRan()
+        
+    def AnsTru(self,ans):
+        if(ans == True):
+            self.correctA()
+        else:
+            self.wrongA()
+    def AnsFal(self,ans):
+        if(ans == False):
+            self.correctA()
+        else:
+            self.wrongA()
+        
+class Act(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+
+        self.config(width=800,height=500)
+        
+        Return = tk.Button(self, text='Return',command=lambda: controller.show(MainMenus),fg = "red")
+        #Return.config(font=self.fonts)
+        Return.place(bordermode=OUTSIDE, height= 100, width = 800, x = 0, y = 400)
+
+        Jump = tk.Button(self, text='Stand Up',command=self.Jump,fg = "red")
+        Look = tk.Button(self,text='Look',command=self.Look,fg = "red")
+        Raw = tk.Button(self,text='Sound',command=self.Raw,fg = "red")
+        Look.place(bordermode=OUTSIDE, height= 100, width = 266.66, x = 0, y = 300)
+        Raw.place(bordermode=OUTSIDE, height= 100, width = 266.66, x = 266.66, y = 300)
+        Jump.place(bordermode=OUTSIDE, height= 100, width = 266.66, x = 533.33, y = 300)
+
+        #Ans1.config(font=self.fonts,text='set1',command=self.ask,fg = "red")
+        #Ans2.config(font=self.fonts,text='set2',command=self.ask,fg = "red")
+
+#17=Eblink
+#27=Elook
+#22=Lf1
+#18=Lf2
+#23=HM
+#24=BM
+        
+    def Look(self):
+        Elook.start(5)
+        Eblink.start(5)
+        Eblink.ChangeDutyCycle(1)
+        time.sleep(2)
+        Eblink.ChangeDutyCycle(21)
+        time.sleep(2)
+
+
+    def Raw(self):
+        print("jump")
+    def Jump(self):
+        Lf1.start(5)
+        Lf2.start(5)
+        Lf1.ChangeDutyCycle(21)
+        Lf2.ChangeDutyCycle(21)
+        time.sleep(5)
+        Lf1.ChangeDutyCycle(1)
+        Lf2.ChangeDutyCycle(1)
+        time.sleep(3)
+
+app = Application()
+app.resizable(False,False)
+app.mainloop()
